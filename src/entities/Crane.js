@@ -14,9 +14,7 @@ export class Crane {
         this.speedIncrement = 0.0004; // Speed increase per tier
         this.swingSpeed = this.baseSwingSpeed;
         this.targetSwingSpeed = this.baseSwingSpeed;
-        this.swingAmplitude = GAME_WIDTH * 0.15; // Smooth horizontal track movement
-        this.maxAngleDeg = 42; // Full intended pendulum oscillation angle: reaches into the 30° to 45° range!
-        this.maxAngleRad = this.maxAngleDeg * (Math.PI / 180);
+        this.swingAmplitude = GAME_WIDTH * 0.35;
     }
 
     setDifficulty(stackCount) {
@@ -65,23 +63,9 @@ export class Crane {
         if (this.block && this.constraint) {
             const delta = engine ? engine.timing.lastDelta : 16.666;
             this.angle += this.swingSpeed * delta;
-            
-            // 1. Calculate pendulum oscillation angle theta(t) reaching maxAngleRad (42 degrees)
-            const currentTheta = this.maxAngleRad * Math.sin(this.angle);
-            
-            // 2. Smoothly oscillate the crane top pivot
             const targetX = (GAME_WIDTH / 2) + Math.sin(this.angle) * this.swingAmplitude;
             this.pivot.x = targetX;
             this.constraint.pointA = { x: this.pivot.x, y: this.pivot.y };
-
-            // 3. Position block along the physical pendulum arc so it achieves full range of motion
-            const blockX = this.pivot.x + Math.sin(currentTheta) * this.constraint.length;
-            const blockY = this.pivot.y + Math.cos(currentTheta) * this.constraint.length;
-            
-            Matter.Body.setPosition(this.block, { x: blockX, y: blockY });
-            Matter.Body.setVelocity(this.block, { x: 0, y: 0 });
-            Matter.Body.setAngle(this.block, currentTheta);
-            Matter.Body.setAngularVelocity(this.block, 0);
         }
     }
     
