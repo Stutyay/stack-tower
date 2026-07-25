@@ -440,6 +440,11 @@ export class Renderer {
         
         this.ctx.restore();
 
+        // --- EDUCATIONAL PHYSICS: Free Fall Velocity Meter (Kinematics) ---
+        if (!this.screenshotMode && this.game && this.game.state === 'PLAYING') {
+            this.drawVelocityMeter();
+        }
+
         // 6. Draw Screenshot-Specific UI Overlay (Watermark)
         if (this.screenshotMode && this.screenshotOverlay) {
             this.ctx.save();
@@ -594,5 +599,75 @@ export class Renderer {
             this.ctx.restore();
         }
         this.ctx.restore(); // Restore global camera shake transform
+    }
+
+    drawVelocityMeter() {
+        const barWidth = 16;
+        const barHeight = 180;
+        const barX = this.canvas.width - barWidth - 16;
+        const barY = 130;
+        
+        const speed = (this.game && this.game.currentFallingSpeed) ? this.game.currentFallingSpeed : 0;
+        const fillRatio = Math.min(1, Math.max(0, speed / 22));
+        
+        // Helper to get heat color from Cyan (cool) to Yellow to Red (hot)
+        let glowColor = '#00ffff';
+        if (fillRatio > 0.5) {
+            glowColor = lerpColor('#ffff00', '#ff0000', (fillRatio - 0.5) * 2);
+        } else {
+            glowColor = lerpColor('#00ffff', '#ffff00', fillRatio * 2);
+        }
+
+        this.ctx.save();
+        
+        // Background container
+        this.ctx.fillStyle = 'rgba(10, 15, 25, 0.75)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        if (this.ctx.roundRect) {
+            this.ctx.roundRect(barX, barY, barWidth, barHeight, 8);
+        } else {
+            this.ctx.rect(barX, barY, barWidth, barHeight);
+        }
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        // Filled kinetic energy gauge
+        if (fillRatio > 0.01) {
+            const fillH = fillRatio * (barHeight - 4);
+            const fillY = barY + barHeight - 2 - fillH;
+            
+            this.ctx.fillStyle = glowColor;
+            this.ctx.shadowColor = glowColor;
+            this.ctx.shadowBlur = 12;
+            this.ctx.beginPath();
+            if (this.ctx.roundRect) {
+                this.ctx.roundRect(barX + 2, fillY, barWidth - 4, fillH, 6);
+            } else {
+                this.ctx.fillRect(barX + 2, fillY, barWidth - 4, fillH);
+            }
+            this.ctx.fill();
+            this.ctx.shadowBlur = 0;
+        }
+
+        // Top Header: "VELOCITY"
+        this.ctx.font = '900 11px sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'bottom';
+        this.ctx.fillStyle = fillRatio > 0.01 ? glowColor : '#aaaaaa';
+        this.ctx.shadowColor = fillRatio > 0.01 ? glowColor : 'transparent';
+        this.ctx.shadowBlur = fillRatio > 0.01 ? 6 : 0;
+        this.ctx.fillText("VELOCITY", barX + barWidth / 2, barY - 6);
+        this.ctx.shadowBlur = 0;
+
+        // Bottom Value: simulated m/s kinematics
+        const speedVal = Math.round(speed * 2.5);
+        this.ctx.font = 'bold 12px sans-serif';
+        this.ctx.textBaseline = 'top';
+        this.ctx.fillStyle = fillRatio > 0.01 ? glowColor : '#ffffff';
+        this.ctx.fillText(`${speedVal} m/s`, barX + barWidth / 2, barY + barHeight + 6);
+
+        this.ctx.restore();
     }
 }

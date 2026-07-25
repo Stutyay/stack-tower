@@ -209,6 +209,66 @@ export class Crane {
             }
         }
         
+        if (this.constraint && this.block) {
+            // --- EDUCATIONAL PHYSICS: Real-Time Oscillation Angle Arc ---
+            const dx = this.block.position.x - this.pivot.x;
+            const dy = this.block.position.y - this.pivot.y;
+            const angleRad = Math.atan2(dx, dy); // Angle relative to vertical (dy > 0 is 0 rad)
+            const degrees = Math.round(Math.abs(angleRad) * (180 / Math.PI));
+
+            // Color coding by potential energy range
+            let color = '#2ecc71'; // 0° to 15°: Green (Stable/Low Potential Energy)
+            let fillColor = 'rgba(46, 204, 113, 0.25)';
+            if (degrees > 30) {
+                color = '#e74c3c'; // Greater than 30°: Red (Extreme/High Potential Energy)
+                fillColor = 'rgba(231, 76, 60, 0.25)';
+            } else if (degrees >= 16) {
+                color = '#f1c40f'; // 16° to 30°: Yellow (Moderate Potential Energy)
+                fillColor = 'rgba(241, 196, 15, 0.25)';
+            }
+
+            const radius = 85;
+            const startAngle = Math.PI / 2; // Vertical resting center 0° in canvas coords
+            const endAngle = Math.atan2(dy, dx); // Block angle in canvas coords
+
+            ctx.save();
+            // Draw semi-transparent sector fill
+            ctx.beginPath();
+            ctx.moveTo(this.pivot.x, this.pivot.y);
+            ctx.arc(this.pivot.x, this.pivot.y, radius, Math.min(startAngle, endAngle), Math.max(startAngle, endAngle));
+            ctx.closePath();
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+
+            // Draw outer arc outline
+            ctx.beginPath();
+            ctx.arc(this.pivot.x, this.pivot.y, radius, Math.min(startAngle, endAngle), Math.max(startAngle, endAngle));
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Draw vertical dashed reference line (true vertical resting center 0°)
+            ctx.beginPath();
+            ctx.setLineDash([4, 4]);
+            ctx.moveTo(this.pivot.x, this.pivot.y);
+            ctx.lineTo(this.pivot.x, this.pivot.y + radius + 15);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Display current angle dynamically near pivot
+            ctx.font = 'bold 15px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = color;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+            ctx.shadowBlur = 4;
+            ctx.fillText(`Angle: ${degrees}°`, this.pivot.x, this.pivot.y + 110);
+            ctx.restore();
+        }
+
         ctx.restore();
     }
 }
+

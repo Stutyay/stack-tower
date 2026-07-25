@@ -75,6 +75,11 @@ export class Game {
                 const bodyA = pairs[i].bodyA;
                 const bodyB = pairs[i].bodyB;
 
+                if (this.activeFallingBlock && (bodyA === this.activeFallingBlock || bodyB === this.activeFallingBlock)) {
+                    this.activeFallingBlock = null;
+                    this.currentFallingSpeed = 0;
+                }
+
                 // If any block hits the ground, it's game over.
                 // It should only land on the pedestal or other blocks!
                 if ((bodyA === this.physics.ground || bodyB === this.physics.ground)) {
@@ -112,6 +117,8 @@ export class Game {
         this.combo = 1;
         this.gameStartTime = null;
         this.elapsedSeconds = 0;
+        this.activeFallingBlock = null;
+        this.currentFallingSpeed = 0;
         this.ui.updateHUD(this.goldCoins, 0, this.combo);
         
         this.state = 'PLAYING';
@@ -158,6 +165,8 @@ export class Game {
         this.currentBlockInstance = null;
         this.crane = null;
         this.tower = null;
+        this.activeFallingBlock = null;
+        this.currentFallingSpeed = 0;
 
         this.state = 'START';
         this.inputState = 'IDLE';
@@ -181,6 +190,8 @@ export class Game {
         Matter.Body.setVelocity(this.currentBlock, { x: 0, y: 0 });
         Matter.Body.setAngularVelocity(this.currentBlock, 0);
 
+        this.activeFallingBlock = this.currentBlock;
+        this.currentFallingSpeed = 0;
         this.crane.release();
 
         if (this.currentBlockInstance) {
@@ -233,6 +244,16 @@ export class Game {
     }
 
     update() {
+        if (this.activeFallingBlock) {
+            this.currentFallingSpeed = Math.max(0, this.activeFallingBlock.velocity.y);
+            if (this.activeFallingBlock.position.y > this.crane.pivot.y + 230 && Math.abs(this.activeFallingBlock.velocity.y) < 0.2) {
+                this.activeFallingBlock = null;
+                this.currentFallingSpeed = 0;
+            }
+        } else {
+            this.currentFallingSpeed = 0;
+        }
+
         this.crane.update(this.physics.engine);
         
         if (this.tower.isCollapsing()) {
@@ -271,6 +292,8 @@ export class Game {
     gameOver() {
         if (this.state === 'GAMEOVER') return;
         this.state = 'GAMEOVER';
+        this.activeFallingBlock = null;
+        this.currentFallingSpeed = 0;
 
         // Stop the timer
         this.elapsedSeconds = this.gameStartTime

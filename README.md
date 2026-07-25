@@ -7,6 +7,9 @@ A fun and dynamic physics-based tower stacking game built with **Vite**, **Matte
 ## ✨ Features
 
 - **🎮 Physics-Based Gameplay:** Powered by `Matter.js` for realistic stacking, swaying, and balance mechanics.
+- **🔬 Educational Physics Visualizations:** Exposes the real-time math and mechanics behind gameplay:
+  - 📐 **Oscillation Angle Arc (Pendulum Physics):** Displays a dynamic, color-coded arc (Green: 0°-15°, Yellow: 16°-30°, Red: >30°) at the crane's top pivot showing real-time swing angles and potential energy.
+  - ⚡ **Free Fall Velocity Meter (Kinematics):** A glowing vertical power gauge tracking downward velocity in real-time upon block release, transitioning from cool Cyan to hot Red as kinetic energy builds before impact.
 - **🌅 Dynamic Day/Night Cycle:** The background sky transitions smoothly from morning to noon, evening, and night as your tower grows taller.
 - **🛒 In-Game Shop & Customization:** Earn gold coins by stacking blocks and spend them in the shop to unlock:
   - 🏗️ **Cranes:** Yellow, Red, Industrial, Cyber, Gold, and Neon cranes.
