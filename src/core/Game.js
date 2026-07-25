@@ -78,6 +78,8 @@ export class Game {
                 if (this.activeFallingBlock && (bodyA === this.activeFallingBlock || bodyB === this.activeFallingBlock)) {
                     this.activeFallingBlock = null;
                     this.currentFallingSpeed = 0;
+                    this.isVelocityTweening = false;
+                    this.displayVelocity = 0;
                 }
 
                 // If any block hits the ground, it's game over.
@@ -119,6 +121,8 @@ export class Game {
         this.elapsedSeconds = 0;
         this.activeFallingBlock = null;
         this.currentFallingSpeed = 0;
+        this.displayVelocity = 0;
+        this.isVelocityTweening = false;
         this.ui.updateHUD(this.goldCoins, 0, this.combo);
         
         this.state = 'PLAYING';
@@ -167,6 +171,8 @@ export class Game {
         this.tower = null;
         this.activeFallingBlock = null;
         this.currentFallingSpeed = 0;
+        this.displayVelocity = 0;
+        this.isVelocityTweening = false;
 
         this.state = 'START';
         this.inputState = 'IDLE';
@@ -192,6 +198,9 @@ export class Game {
 
         this.activeFallingBlock = this.currentBlock;
         this.currentFallingSpeed = 0;
+        this.displayVelocity = 0;
+        this.isVelocityTweening = true;
+        this.dropStartTime = Date.now();
         this.crane.release();
 
         if (this.currentBlockInstance) {
@@ -245,13 +254,22 @@ export class Game {
 
     update() {
         if (this.activeFallingBlock) {
-            this.currentFallingSpeed = Math.max(0, this.activeFallingBlock.velocity.y);
+            if (this.isVelocityTweening) {
+                const elapsed = (Date.now() - (this.dropStartTime || Date.now())) / 1000;
+                const duration = 0.65; // Estimated time to impact in seconds
+                const t = Math.min(1, elapsed / duration);
+                this.displayVelocity = 0 + (11.0 - 0) * t;
+            }
             if (this.activeFallingBlock.position.y > this.crane.pivot.y + 230 && Math.abs(this.activeFallingBlock.velocity.y) < 0.2) {
                 this.activeFallingBlock = null;
                 this.currentFallingSpeed = 0;
+                this.isVelocityTweening = false;
+                this.displayVelocity = 0;
             }
         } else {
             this.currentFallingSpeed = 0;
+            this.isVelocityTweening = false;
+            this.displayVelocity = 0;
         }
 
         this.crane.update(this.physics.engine);
@@ -294,6 +312,8 @@ export class Game {
         this.state = 'GAMEOVER';
         this.activeFallingBlock = null;
         this.currentFallingSpeed = 0;
+        this.isVelocityTweening = false;
+        this.displayVelocity = 0;
 
         // Stop the timer
         this.elapsedSeconds = this.gameStartTime
