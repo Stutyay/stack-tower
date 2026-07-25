@@ -8,7 +8,7 @@ export class Block {
             friction: 0.1,
             restitution: 0.02,
             density: 0.05,
-            frictionAir: 0.06,
+            frictionAir: 0.01,
             frictionStatic: 0.1,
             sleepThreshold: -1
         });

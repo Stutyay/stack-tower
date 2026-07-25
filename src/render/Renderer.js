@@ -608,8 +608,13 @@ export class Renderer {
         const barX = this.canvas.width - barWidth - 16;
         const barY = 130;
         
-        const speed = (this.game && this.game.currentFallingSpeed) ? this.game.currentFallingSpeed : 0;
-        const fillRatio = Math.min(1, Math.max(0, speed / 22));
+        let speed = 0;
+        if (this.game && this.game.activeFallingBlock) {
+            speed = Math.abs(this.game.activeFallingBlock.velocity.y);
+        } else if (this.game && this.game.currentFallingSpeed) {
+            speed = Math.abs(this.game.currentFallingSpeed);
+        }
+        const fillRatio = Math.min(1, Math.max(0, speed / 15));
         
         // Helper to get heat color from Cyan (cool) to Yellow to Red (hot)
         let glowColor = '#00ffff';
@@ -662,8 +667,8 @@ export class Renderer {
         this.ctx.fillText("VELOCITY", barX + barWidth / 2, barY - 6);
         this.ctx.shadowBlur = 0;
 
-        // Bottom Value: simulated m/s kinematics
-        const speedVal = Math.round(speed * 2.5);
+        // Bottom Value: real-time Y-axis velocity rounded to 1 decimal place
+        const speedVal = speed.toFixed(1);
         this.ctx.font = 'bold 12px sans-serif';
         this.ctx.textBaseline = 'top';
         this.ctx.fillStyle = fillRatio > 0.01 ? glowColor : '#ffffff';

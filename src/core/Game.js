@@ -76,6 +76,9 @@ export class Game {
                 const bodyB = pairs[i].bodyB;
 
                 if (this.activeFallingBlock && (bodyA === this.activeFallingBlock || bodyB === this.activeFallingBlock)) {
+                    if (this.activeFallingBlock.plugin && this.activeFallingBlock.plugin.blockInstance) {
+                        this.activeFallingBlock.plugin.blockInstance.dampImpact();
+                    }
                     this.activeFallingBlock = null;
                     this.currentFallingSpeed = 0;
                 }
@@ -186,17 +189,16 @@ export class Game {
         // --- LOCK INPUT IMMEDIATELY ---
         this.inputState = 'DROPPING';
 
-        // Zero out velocity for a clean, straight drop
-        Matter.Body.setVelocity(this.currentBlock, { x: 0, y: 0 });
-        Matter.Body.setAngularVelocity(this.currentBlock, 0);
-
         this.activeFallingBlock = this.currentBlock;
         this.currentFallingSpeed = 0;
         this.crane.release();
 
-        if (this.currentBlockInstance) {
-            this.currentBlockInstance.dampImpact();
-        }
+        // 1. Ensure starting vertical velocity upon release is exactly 0
+        // 2. Enable natural gravitational acceleration with low air friction
+        this.currentBlock.frictionAir = 0.002;
+        this.currentBlock.ignoreGravity = false;
+        Matter.Body.setVelocity(this.currentBlock, { x: 0, y: 0 });
+        Matter.Body.setAngularVelocity(this.currentBlock, 0);
 
         if (this.settings && this.settings.accessibility && this.settings.accessibility.screenShake) {
             this.renderer.shakeAmount = 15;
@@ -245,7 +247,7 @@ export class Game {
 
     update() {
         if (this.activeFallingBlock) {
-            this.currentFallingSpeed = Math.max(0, this.activeFallingBlock.velocity.y);
+            this.currentFallingSpeed = Math.abs(this.activeFallingBlock.velocity.y);
             if (this.activeFallingBlock.position.y > this.crane.pivot.y + 230 && Math.abs(this.activeFallingBlock.velocity.y) < 0.2) {
                 this.activeFallingBlock = null;
                 this.currentFallingSpeed = 0;
