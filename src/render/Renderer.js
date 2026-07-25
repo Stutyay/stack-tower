@@ -440,9 +440,10 @@ export class Renderer {
         
         this.ctx.restore();
 
-        // --- EDUCATIONAL PHYSICS: Free Fall Velocity Meter (Kinematics) ---
+        // --- EDUCATIONAL PHYSICS: Free Fall Velocity Meter (Kinematics) & Angle Gauge (Pendulum) ---
         if (!this.screenshotMode && this.game && this.game.state === 'PLAYING') {
             this.drawVelocityMeter();
+            this.drawAngleGauge();
         }
 
         // 6. Draw Screenshot-Specific UI Overlay (Watermark)
@@ -667,6 +668,139 @@ export class Renderer {
         this.ctx.textBaseline = 'top';
         this.ctx.fillStyle = fillRatio > 0.01 ? glowColor : '#ffffff';
         this.ctx.fillText(`${speedVal} m/s`, barX + barWidth / 2, barY + barHeight + 6);
+
+        this.ctx.restore();
+    }
+
+    drawAngleGauge() {
+        const cx = this.canvas.width / 2;
+        const cy = 48; // Positioned cleanly at top center, integrated below the top UI / crane track
+        const radius = 36;
+        
+        let currentAngleRad = 0;
+        let degrees = 0;
+        if (this.game && this.game.crane && this.game.crane.constraint && this.game.crane.block) {
+            const dx = this.game.crane.block.position.x - this.game.crane.pivot.x;
+            const dy = this.game.crane.block.position.y - this.game.crane.pivot.y;
+            currentAngleRad = Math.atan2(dx, dy); // 0 rad is vertical down
+            degrees = Math.round(Math.abs(currentAngleRad) * (180 / Math.PI));
+        }
+
+        // Color coding by potential energy range
+        let color = '#2ecc71'; // 0° to 15°: Green (Stable/Low Potential Energy)
+        if (degrees > 30) {
+            color = '#e74c3c'; // >30°: Red (Extreme/High Potential Energy)
+        } else if (degrees >= 16) {
+            color = '#f1c40f'; // 16° to 30°: Yellow (Moderate Potential Energy)
+        }
+
+        this.ctx.save();
+        
+        // --- Top Header: "ANGLE" ---
+        this.ctx.font = '900 11px sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'bottom';
+        this.ctx.fillStyle = '#aaaaaa';
+        this.ctx.fillText("ANGLE", cx, cy - 4);
+        
+        // --- 1. Semi-Circle Gauge Background Panel ---
+        const startRad = Math.PI / 2 - (50 * Math.PI / 180);
+        const endRad = Math.PI / 2 + (50 * Math.PI / 180);
+        
+        this.ctx.beginPath();
+        this.ctx.moveTo(cx, cy);
+        this.ctx.arc(cx, cy, radius, startRad, endRad);
+        this.ctx.closePath();
+        this.ctx.fillStyle = 'rgba(10, 15, 25, 0.75)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        this.ctx.lineWidth = 1.5;
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        // --- 2. Color-Coded Zone Tracks (Speedometer/Protractor Style) ---
+        // Green zone (0° to 15° on both left and right of center)
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, radius, Math.PI/2 - (15*Math.PI/180), Math.PI/2 + (15*Math.PI/180));
+        this.ctx.strokeStyle = 'rgba(46, 204, 113, 0.4)';
+        this.ctx.lineWidth = 4;
+        this.ctx.stroke();
+
+        // Yellow zone (16° to 30°)
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, radius, Math.PI/2 - (30*Math.PI/180), Math.PI/2 - (15*Math.PI/180));
+        this.ctx.arc(cx, cy, radius, Math.PI/2 + (15*Math.PI/180), Math.PI/2 + (30*Math.PI/180));
+        this.ctx.strokeStyle = 'rgba(241, 196, 15, 0.4)';
+        this.ctx.lineWidth = 4;
+        this.ctx.stroke();
+
+        // Red zone (>30°)
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, radius, startRad, Math.PI/2 - (30*Math.PI/180));
+        this.ctx.arc(cx, cy, radius, Math.PI/2 + (30*Math.PI/180), endRad);
+        this.ctx.strokeStyle = 'rgba(231, 76, 60, 0.4)';
+        this.ctx.lineWidth = 4;
+        this.ctx.stroke();
+
+        // --- 3. Static Angle Markings ("0°", "15°", "30°") ---
+        this.ctx.font = '700 9px sans-serif';
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+        this.ctx.textBaseline = 'middle';
+        
+        const drawMark = (deg, label, align) => {
+            const rad = Math.PI / 2 - (deg * Math.PI / 180);
+            const lx = cx + Math.cos(rad) * (radius - 12);
+            const ly = cy + Math.sin(rad) * (radius - 12);
+            this.ctx.textAlign = align;
+            this.ctx.fillText(label, lx, ly);
+        };
+
+        drawMark(-30, "30°", 'right');
+        drawMark(-15, "15°", 'right');
+        drawMark(0, "0°", 'center');
+        drawMark(15, "15°", 'left');
+        drawMark(30, "30°", 'left');
+
+        // --- 4. Sweeping Indicator Needle & Glowing Dot ---
+        // Angle in canvas coordinates: 90° (down) minus current angle
+        const needleRad = Math.PI / 2 - currentAngleRad;
+        const tipX = cx + Math.cos(needleRad) * (radius - 2);
+        const tipY = cy + Math.sin(needleRad) * (radius - 2);
+
+        // Center pivot dot
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fill();
+
+        // Needle line
+        this.ctx.beginPath();
+        this.ctx.moveTo(cx, cy);
+        this.ctx.lineTo(tipX, tipY);
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 2.5;
+        this.ctx.shadowColor = color;
+        this.ctx.shadowBlur = 8;
+        this.ctx.stroke();
+
+        // Glowing dot along the gauge edge at tip
+        this.ctx.beginPath();
+        this.ctx.arc(tipX, tipY, 4.5, 0, Math.PI * 2);
+        this.ctx.fillStyle = color;
+        this.ctx.shadowColor = color;
+        this.ctx.shadowBlur = 12;
+        this.ctx.fill();
+        this.ctx.shadowBlur = 0; // Reset shadow
+
+        // --- 5. Stationary Main Digital Text Readout ---
+        // Placed cleanly underneath the stationary gauge
+        this.ctx.font = 'bold 13px sans-serif';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'top';
+        this.ctx.fillStyle = color;
+        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        this.ctx.shadowBlur = 4;
+        this.ctx.fillText(`${degrees}°`, cx, cy + radius + 4);
+        this.ctx.shadowBlur = 0;
 
         this.ctx.restore();
     }
