@@ -8,7 +8,7 @@ A fun and dynamic physics-based tower stacking game built with **Vite**, **Matte
 
 - **🎮 Physics-Based Gameplay:** Powered by `Matter.js` for realistic stacking, swaying, and balance mechanics.
 - **🔬 Educational Physics Visualizations:** Exposes the real-time math and mechanics behind gameplay:
-  - 📐 **Fixed Top-HUD Angle Gauge (Pendulum Physics):** A stationary speedometer/protractor-style semi-circle gauge anchored at the top center HUD. Features a sweeping indicator needle with a glowing dot and dynamic digital readout, color-coded by potential energy range (Green: 0°-15°, Yellow: 16°-30°, Red: >30°).
+  - 📐 **Relocated Top-Left HUD Angle Gauge (Pendulum Physics):** A stationary speedometer/protractor-style semi-circle gauge relocated cleanly to the top-left HUD (underneath the stats display) to keep the central drop zone 100% unobstructed. Includes smart proximity fading (reduces opacity to 30% when the tower or block approaches), a sweeping indicator needle with a glowing dot, and dynamic digital readout color-coded by potential energy range (Green: 0°-15°, Yellow: 16°-30°, Red: >30°).
   - ⚡ **Free Fall Velocity Meter (Kinematics):** A glowing vertical power gauge tracking downward velocity in real-time upon block release, transitioning from cool Cyan to hot Red as kinetic energy builds before impact.
 - **🌅 Dynamic Day/Night Cycle:** The background sky transitions smoothly from morning to noon, evening, and night as your tower grows taller.
 - **🛒 In-Game Shop & Customization:** Earn gold coins by stacking blocks and spend them in the shop to unlock:

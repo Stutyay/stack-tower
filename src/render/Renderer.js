@@ -673,8 +673,11 @@ export class Renderer {
     }
 
     drawAngleGauge() {
-        const cx = this.canvas.width / 2;
-        const cy = 48; // Positioned cleanly at top center, integrated below the top UI / crane track
+        // 1. Relocate Angle Gauge: Anchor to top-left underneath Coins/Height display box,
+        // ensuring it scales properly and never encroaches on the center column.
+        const maxSafeCx = (this.canvas.width / 2) - 55; // Keep at least 55px clearance from center column
+        const cx = Math.min(70, Math.max(45, maxSafeCx));
+        const cy = 130; // Positioned cleanly underneath stats box, symmetrical with Velocity meter on right
         const radius = 36;
         
         let currentAngleRad = 0;
@@ -695,6 +698,40 @@ export class Renderer {
         }
 
         this.ctx.save();
+        
+        // 2. Smart Opacity (Proximity Fade): Fade down to 30% if tower top or swinging block gets within proximity
+        let targetAlpha = 1.0;
+        if (this.game && this.game.state === 'PLAYING' && this.game.tower && !this.game.tower.isCollapsing()) {
+            let highestWorldY = this.game.tower.getTopY();
+            if (this.game.crane && this.game.crane.block) {
+                highestWorldY = Math.min(highestWorldY, this.game.crane.block.position.y);
+            }
+            if (this.game.activeFallingBlock) {
+                highestWorldY = Math.min(highestWorldY, this.game.activeFallingBlock.position.y);
+            }
+
+            // Convert world Y to screen Y based on active camera zoom
+            let scaleFactor = 1.0;
+            if (this.game.crane) {
+                const highestPoint = this.game.crane.pivot.y - 50;
+                if (highestPoint < 0) {
+                    scaleFactor = GAME_HEIGHT / (GAME_HEIGHT + Math.abs(highestPoint));
+                }
+            }
+            const highestScreenY = GAME_HEIGHT + (highestWorldY - GAME_HEIGHT) * scaleFactor;
+
+            // If the top of the tower/block gets within 140px of the gauge's center Y (cy = 130)
+            if (highestScreenY < cy + 140) {
+                targetAlpha = 0.3; // Fade down to 30% opacity
+            }
+        }
+
+        // Smoothly fade the opacity
+        if (typeof this.angleGaugeOpacity !== 'number') {
+            this.angleGaugeOpacity = 1.0;
+        }
+        this.angleGaugeOpacity += (targetAlpha - this.angleGaugeOpacity) * 0.15;
+        this.ctx.globalAlpha = this.angleGaugeOpacity;
         
         // --- Top Header: "ANGLE" ---
         this.ctx.font = '900 11px sans-serif';
