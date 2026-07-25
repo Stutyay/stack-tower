@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>CRAZiNOS - Stack Tower</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script src="https://games.crazinos.com/sdk/game-sdk.js"></script>
+  </head>
+  <body>
+    <!-- Audio Elements -->
+    <audio id="bg-music" src="./background_music.mp3" loop></audio>
+
+    <div id="game-container">
+      <!-- UI Layer -->
+      <div id="ui-layer">
+        <div id="hud" class="hidden">
+          <div class="stats-bar">
+            <span>🪙 Coins: <span id="score">0</span></span>
+            <span>Height: <span id="height">0</span>m</span>
+          </div>
+          <div class="hud-right">
+            <button id="quick-mute-btn" class="quick-mute-btn" title="Toggle Audio">🔊</button>
+            <div id="combo-display" class="hidden">Combo x<span id="combo">1</span></div>
+          </div>
+        </div>
+        
+        <!-- Page 1a: Publisher Hub Screen -->
+        <div id="hub-screen" class="screen">
+          <div class="hub-header">
+            <img src="./crazy xyz logo.jpeg" alt="Crazy XYZ Logo" class="hub-logo" />
+            <div class="hub-brand">Crazy XYZ Games</div>
+            <p class="hub-tagline">Select a game to play</p>
+          </div>
+
+          <div class="hub-grid">
+            <button class="hub-sq hub-sq--active" id="hub-stack-tower">
+              <div class="hub-sq__inner">Stack Tower</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Page 1b: Splash Screen -->
+        <div id="splash-screen" class="screen hidden">
+          <div class="splash-content">
+            <h1 class="splash-logo">Crazy XYZ</h1>
+            <p>Presents</p>
+          </div>
+        </div>
+        
+        <!-- Page 2: Main Menu (Start Screen) -->
+        <div id="start-screen" class="screen hidden">
+          <img src="./logo.png" alt="CRAZINOS" class="start-logo" />
+          <h2>Stack Tower</h2>
+          
+          <div class="main-menu-buttons">
+            <button id="start-btn" class="btn-primary">▶ Play</button>
+            <div class="secondary-menu">
+              <button id="shop-btn" class="btn-secondary">🛒 Shop</button>
+              <button id="settings-btn" class="btn-secondary">⚙️ Settings</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shop Modal -->
+        <div id="shop-modal" class="modal hidden">
+          <div class="shop-panel">
+
+            <!-- Header -->
+            <div class="shop-header">
+              <span class="shop-title">🛒 Shop</span>
+              <span class="shop-coin-counter">🪙 <span id="shop-coins">0</span></span>
+              <button class="close-modal shop-close">✖</button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="shop-tabs">
+              <button class="shop-tab active" data-tab="cranes">🏗️ Cranes</button>
+              <button class="shop-tab" data-tab="blocks">🧱 Blocks</button>
+              <button class="shop-tab" data-tab="bases">🟫 Bases</button>
+              <button class="shop-tab" data-tab="decorations">🌅 Decorations</button>
+            </div>
+
+            <!-- Item Grid (populated by JS) -->
+            <div class="shop-grid" id="shop-grid"></div>
+
+          </div>
+        </div>
+
+        <div id="settings-modal" class="modal hidden">
+          <div class="modal-content settings-modal-content">
+            <button class="close-modal">✖</button>
+            <h2>Settings</h2>
+            
+            <div class="settings-tabs">
+              <button class="settings-tab active" data-tab="audio">Audio</button>
+              <button class="settings-tab" data-tab="video">Video</button>
+              <button class="settings-tab" data-tab="access">Gameplay</button>
+            </div>
+
+            <div class="settings-body">
+              <!-- Audio Tab -->
+              <div class="settings-panel active" id="settings-audio">
+                <div class="setting-item">
+                  <span>Master Volume</span>
+                  <input type="range" id="vol-master" min="0" max="100" value="100">
+                </div>
+                <div class="setting-item">
+                  <span>Music Volume</span>
+                  <input type="range" id="vol-music" min="0" max="100" value="100">
+                </div>
+                <div class="setting-item">
+                  <span>SFX Volume</span>
+                  <input type="range" id="vol-sfx" min="0" max="100" value="100">
+                </div>
+              </div>
+
+              <!-- Video Tab -->
+              <div class="settings-panel hidden" id="settings-video">
+                <div class="setting-item">
+                  <span>Brightness</span>
+                  <input type="range" id="disp-brightness" min="50" max="150" value="100">
+                </div>
+                <div class="setting-item">
+                  <span>Contrast</span>
+                  <input type="range" id="disp-contrast" min="50" max="150" value="100">
+                </div>
+              </div>
+
+              <!-- Accessibility Tab -->
+              <div class="settings-panel hidden" id="settings-access">
+                <div class="setting-item">
+                  <span>Screen Shake</span>
+                  <label class="switch">
+                    <input type="checkbox" id="toggle-shake" checked>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Global Audio -->
+        <!-- Placeholder ambient track (public domain loopable) -->
+        <audio id="bg-music" src="https://actions.google.com/sounds/v1/water/rain_on_roof.ogg" loop></audio>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="screen hidden">
+          <div class="results-panel">
+
+            <div class="results-header">
+              <p class="game-over-label">GAME OVER</p>
+              <p class="collapse-msg">Tower Collapsed!</p>
+            </div>
+
+            <div class="metrics-grid">
+              <!-- Height/Stacks -->
+              <div class="metric-card height">
+                <span class="metric-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                    <line x1="12" y1="20" x2="12" y2="10"/>
+                    <line x1="18" y1="20" x2="18" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="16"/>
+                  </svg>
+                </span>
+                <span class="metric-value" id="final-height">0</span>
+                <span class="metric-label">This Run</span>
+              </div>
+              <!-- Score -->
+              <div class="metric-card score">
+                <span class="metric-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                </span>
+                <span class="metric-value" id="final-score">0</span>
+                <span class="metric-label">Total Score</span>
+              </div>
+              <!-- Time -->
+              <div class="metric-card time">
+                <span class="metric-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                    <circle cx="12" cy="12" r="9"/>
+                    <polyline points="12 7 12 12 15 15"/>
+                  </svg>
+                </span>
+                <span class="metric-value" id="final-time">00:00</span>
+                <span class="metric-label">Time Spent</span>
+              </div>
+            </div>
+
+            <!-- New Gold Coin Reward Bar -->
+            <div class="reward-bar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#FFD700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 6v1m0 10v1M9.5 9.5C9.5 8.1 10.6 7 12 7s2.5 1.1 2.5 2.5c0 2.5-5 2.5-5 5 0 1.4 1.1 2.5 2.5 2.5s2.5-1.1 2.5-2.5"/>
+              </svg>
+              <span><span id="final-coins">0</span> GOLD COINS</span>
+            </div>
+
+            <div class="action-buttons">
+              <button id="restart-btn" class="btn-primary btn-stacked">
+                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                  <polyline points="1 4 1 10 7 10"/>
+                  <path d="M3.51 15a9 9 0 1 0 .49-3.51"/>
+                </svg>
+                <span>TRY AGAIN</span>
+              </button>
+              <div class="secondary-actions">
+                <button id="save-btn" class="btn-secondary btn-stacked">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>SAVE</span>
+                </button>
+                <button id="share-btn" class="btn-secondary btn-stacked">
+                  <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                    <circle cx="18" cy="5" r="3"/>
+                    <circle cx="6" cy="12" r="3"/>
+                    <circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  </svg>
+                  <span>SHARE</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

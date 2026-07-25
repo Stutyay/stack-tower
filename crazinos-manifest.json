@@ -1,0 +1,13 @@
+{
+  "name": "Stack Tower",
+  "description": "An endless block stacking game. Build the highest tower possible to earn Zino Coins.",
+  "maxScoreLimit": 1000000,
+  "levels": {
+    "strategy": "score_thresholds",
+    "allowReplayRewards": true,
+    "dailyCapCoins": 500,
+    "rules": [
+      { "level": 1, "name": "Endless Tower", "threshold1": 1000, "threshold2": 5000, "threshold3": 15000 }
+    ]
+  }
+}
