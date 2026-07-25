@@ -54,32 +54,42 @@ canvas {
 
 /* ─── HUD ──────────────────────────────────── */
 #hud {
-  padding: 16px 20px;
+  padding: 8px 10px; /* Tightly anchored to edges */
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   color: white;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.9);
-  font-size: 1.1rem;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+  font-size: 0.85rem;
   font-weight: 600;
-  pointer-events: none; /* Let clicks pass through empty spaces */
+  pointer-events: none; /* Let clicks pass through empty spaces to protect center drop zone */
+}
+
+.hud-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  pointer-events: auto;
+  max-width: 140px; /* Restrict width strictly so it never bleeds into center drop zone */
 }
 
 .hud-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 8px;
+  gap: 6px;
   pointer-events: auto;
+  max-width: 60px; /* Keep strictly on right edge */
 }
 
 .quick-mute-btn {
   background: rgba(0, 10, 20, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  font-size: 1.25rem;
   color: white;
   cursor: pointer;
   backdrop-filter: blur(8px);
@@ -105,39 +115,41 @@ canvas {
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background: rgba(0, 10, 20, 0.65);
-  padding: 12px 20px;
-  border-radius: 14px;
+  gap: 3px;
+  background: rgba(0, 10, 20, 0.75);
+  padding: 6px 10px; /* Scaled down by 50% */
+  border-radius: 8px;
   backdrop-filter: blur(8px);
-  font-size: 1.45rem;
-  font-weight: 800;
-  letter-spacing: 0.5px;
+  font-size: 0.8rem; /* Scaled down by ~45% from 1.45rem */
+  font-weight: 700;
+  letter-spacing: 0.3px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  width: fit-content;
 }
 
 #score {
   color: #FFD700;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
 }
 
 #height {
   color: #00FFFF;
-  text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.6);
 }
 
 #combo-display {
   color: #FFD700;
-  font-size: 1.7rem;
-  font-weight: 900;
-  text-shadow: 0 0 15px rgba(255, 215, 0, 0.9), 0 2px 4px rgba(0, 0, 0, 0.9);
+  font-size: 0.9rem; /* Scaled down by ~47% from 1.7rem */
+  font-weight: 800;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.9), 0 1px 3px rgba(0, 0, 0, 0.9);
   animation: pulse 0.5s infinite alternate;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 8px 16px;
-  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px 10px; /* Scaled down by ~50% from 8px 16px */
+  border-radius: 6px;
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 215, 0, 0.4);
+  width: fit-content;
 }
 
 @keyframes pulse {
