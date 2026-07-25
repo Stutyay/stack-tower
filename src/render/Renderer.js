@@ -435,15 +435,14 @@ export class Renderer {
         
         // 5. Draw Crane (Hide in screenshot mode so only the tower is captured)
         if (this.game.crane && !this.screenshotMode) {
-            this.game.crane.draw(this.ctx);
+            this.game.crane.draw(this.ctx, this.game);
         }
         
         this.ctx.restore();
 
-        // --- EDUCATIONAL PHYSICS: Free Fall Velocity Meter (Kinematics) & Angle Gauge (Pendulum) ---
+        // --- EDUCATIONAL PHYSICS: Free Fall Velocity Meter (Kinematics) ---
         if (!this.screenshotMode && this.game && this.game.state === 'PLAYING') {
             this.drawVelocityMeter();
-            this.drawAngleGauge();
         }
 
         // 6. Draw Screenshot-Specific UI Overlay (Watermark)
@@ -603,10 +602,10 @@ export class Renderer {
     }
 
     drawVelocityMeter() {
-        const barWidth = 16;
-        const barHeight = 180;
-        const barX = this.canvas.width - barWidth - 16;
-        const barY = 130;
+        const barWidth = 24;
+        const barHeight = 220;
+        const barX = this.canvas.width - barWidth - 20;
+        const barY = 120;
         
         const speed = (this.game && typeof this.game.currentDisplayVelocity === 'number') ? this.game.currentDisplayVelocity : 0;
         const fillRatio = Math.min(1, Math.max(0, speed / 11.0));
@@ -622,8 +621,8 @@ export class Renderer {
         this.ctx.save();
         
         // Background container
-        this.ctx.fillStyle = 'rgba(10, 15, 25, 0.75)';
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+        this.ctx.fillStyle = 'rgba(10, 15, 25, 0.82)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         if (this.ctx.roundRect) {
@@ -653,192 +652,29 @@ export class Renderer {
         }
 
         // Top Header: "VELOCITY"
-        this.ctx.font = '900 11px sans-serif';
+        this.ctx.font = '900 14px sans-serif';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'bottom';
-        this.ctx.fillStyle = fillRatio > 0.01 ? glowColor : '#aaaaaa';
-        this.ctx.shadowColor = fillRatio > 0.01 ? glowColor : 'transparent';
-        this.ctx.shadowBlur = fillRatio > 0.01 ? 6 : 0;
-        this.ctx.fillText("VELOCITY", barX + barWidth / 2, barY - 6);
+        this.ctx.fillStyle = fillRatio > 0.01 ? glowColor : '#cccccc';
+        this.ctx.shadowColor = fillRatio > 0.01 ? glowColor : 'rgba(0, 0, 0, 0.9)';
+        this.ctx.shadowBlur = fillRatio > 0.01 ? 8 : 4;
+        this.ctx.fillText("VELOCITY", barX + barWidth / 2, barY - 8);
         this.ctx.shadowBlur = 0;
 
         // Bottom Value: simulated m/s kinematics (rounded to 1 decimal place)
         const speedVal = speed.toFixed(1);
-        this.ctx.font = 'bold 12px sans-serif';
+        this.ctx.font = '900 16px sans-serif';
         this.ctx.textBaseline = 'top';
         this.ctx.fillStyle = fillRatio > 0.01 ? glowColor : '#ffffff';
-        this.ctx.fillText(`${speedVal} m/s`, barX + barWidth / 2, barY + barHeight + 6);
+        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+        this.ctx.shadowBlur = 4;
+        this.ctx.fillText(`${speedVal} m/s`, barX + barWidth / 2, barY + barHeight + 8);
+        this.ctx.shadowBlur = 0;
 
         this.ctx.restore();
     }
 
     drawAngleGauge() {
-        // 1. Relocate Angle Gauge: Anchor to top-left underneath Coins/Height display box,
-        // ensuring it scales properly and never encroaches on the center column.
-        const maxSafeCx = (this.canvas.width / 2) - 55; // Keep at least 55px clearance from center column
-        const cx = Math.min(70, Math.max(45, maxSafeCx));
-        const cy = 130; // Positioned cleanly underneath stats box, symmetrical with Velocity meter on right
-        const radius = 36;
-        
-        let currentAngleRad = 0;
-        let degrees = 0;
-        if (this.game && this.game.crane && this.game.crane.constraint && this.game.crane.block) {
-            const dx = this.game.crane.block.position.x - this.game.crane.pivot.x;
-            const dy = this.game.crane.block.position.y - this.game.crane.pivot.y;
-            currentAngleRad = Math.atan2(dx, dy); // 0 rad is vertical down
-            degrees = Math.round(Math.abs(currentAngleRad) * (180 / Math.PI));
-        }
-
-        // Color coding by potential energy range
-        let color = '#2ecc71'; // 0° to 15°: Green (Stable/Low Potential Energy)
-        if (degrees > 30) {
-            color = '#e74c3c'; // >30°: Red (Extreme/High Potential Energy)
-        } else if (degrees >= 16) {
-            color = '#f1c40f'; // 16° to 30°: Yellow (Moderate Potential Energy)
-        }
-
-        this.ctx.save();
-        
-        // 2. Smart Opacity (Proximity Fade): Fade down to 30% if tower top or swinging block gets within proximity
-        let targetAlpha = 1.0;
-        if (this.game && this.game.state === 'PLAYING' && this.game.tower && !this.game.tower.isCollapsing()) {
-            let highestWorldY = this.game.tower.getTopY();
-            if (this.game.crane && this.game.crane.block) {
-                highestWorldY = Math.min(highestWorldY, this.game.crane.block.position.y);
-            }
-            if (this.game.activeFallingBlock) {
-                highestWorldY = Math.min(highestWorldY, this.game.activeFallingBlock.position.y);
-            }
-
-            // Convert world Y to screen Y based on active camera zoom
-            let scaleFactor = 1.0;
-            if (this.game.crane) {
-                const highestPoint = this.game.crane.pivot.y - 50;
-                if (highestPoint < 0) {
-                    scaleFactor = GAME_HEIGHT / (GAME_HEIGHT + Math.abs(highestPoint));
-                }
-            }
-            const highestScreenY = GAME_HEIGHT + (highestWorldY - GAME_HEIGHT) * scaleFactor;
-
-            // If the top of the tower/block gets within 140px of the gauge's center Y (cy = 130)
-            if (highestScreenY < cy + 140) {
-                targetAlpha = 0.3; // Fade down to 30% opacity
-            }
-        }
-
-        // Smoothly fade the opacity
-        if (typeof this.angleGaugeOpacity !== 'number') {
-            this.angleGaugeOpacity = 1.0;
-        }
-        this.angleGaugeOpacity += (targetAlpha - this.angleGaugeOpacity) * 0.15;
-        this.ctx.globalAlpha = this.angleGaugeOpacity;
-        
-        // --- Top Header: "ANGLE" ---
-        this.ctx.font = '900 11px sans-serif';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'bottom';
-        this.ctx.fillStyle = '#aaaaaa';
-        this.ctx.fillText("ANGLE", cx, cy - 4);
-        
-        // --- 1. Semi-Circle Gauge Background Panel ---
-        const startRad = Math.PI / 2 - (50 * Math.PI / 180);
-        const endRad = Math.PI / 2 + (50 * Math.PI / 180);
-        
-        this.ctx.beginPath();
-        this.ctx.moveTo(cx, cy);
-        this.ctx.arc(cx, cy, radius, startRad, endRad);
-        this.ctx.closePath();
-        this.ctx.fillStyle = 'rgba(10, 15, 25, 0.75)';
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-        this.ctx.lineWidth = 1.5;
-        this.ctx.fill();
-        this.ctx.stroke();
-
-        // --- 2. Color-Coded Zone Tracks (Speedometer/Protractor Style) ---
-        // Green zone (0° to 15° on both left and right of center)
-        this.ctx.beginPath();
-        this.ctx.arc(cx, cy, radius, Math.PI/2 - (15*Math.PI/180), Math.PI/2 + (15*Math.PI/180));
-        this.ctx.strokeStyle = 'rgba(46, 204, 113, 0.4)';
-        this.ctx.lineWidth = 4;
-        this.ctx.stroke();
-
-        // Yellow zone (16° to 30°)
-        this.ctx.beginPath();
-        this.ctx.arc(cx, cy, radius, Math.PI/2 - (30*Math.PI/180), Math.PI/2 - (15*Math.PI/180));
-        this.ctx.arc(cx, cy, radius, Math.PI/2 + (15*Math.PI/180), Math.PI/2 + (30*Math.PI/180));
-        this.ctx.strokeStyle = 'rgba(241, 196, 15, 0.4)';
-        this.ctx.lineWidth = 4;
-        this.ctx.stroke();
-
-        // Red zone (>30°)
-        this.ctx.beginPath();
-        this.ctx.arc(cx, cy, radius, startRad, Math.PI/2 - (30*Math.PI/180));
-        this.ctx.arc(cx, cy, radius, Math.PI/2 + (30*Math.PI/180), endRad);
-        this.ctx.strokeStyle = 'rgba(231, 76, 60, 0.4)';
-        this.ctx.lineWidth = 4;
-        this.ctx.stroke();
-
-        // --- 3. Static Angle Markings ("0°", "15°", "30°") ---
-        this.ctx.font = '700 9px sans-serif';
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
-        this.ctx.textBaseline = 'middle';
-        
-        const drawMark = (deg, label, align) => {
-            const rad = Math.PI / 2 - (deg * Math.PI / 180);
-            const lx = cx + Math.cos(rad) * (radius - 12);
-            const ly = cy + Math.sin(rad) * (radius - 12);
-            this.ctx.textAlign = align;
-            this.ctx.fillText(label, lx, ly);
-        };
-
-        drawMark(-30, "30°", 'right');
-        drawMark(-15, "15°", 'right');
-        drawMark(0, "0°", 'center');
-        drawMark(15, "15°", 'left');
-        drawMark(30, "30°", 'left');
-
-        // --- 4. Sweeping Indicator Needle & Glowing Dot ---
-        // Angle in canvas coordinates: 90° (down) minus current angle
-        const needleRad = Math.PI / 2 - currentAngleRad;
-        const tipX = cx + Math.cos(needleRad) * (radius - 2);
-        const tipY = cy + Math.sin(needleRad) * (radius - 2);
-
-        // Center pivot dot
-        this.ctx.beginPath();
-        this.ctx.arc(cx, cy, 3, 0, Math.PI * 2);
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.fill();
-
-        // Needle line
-        this.ctx.beginPath();
-        this.ctx.moveTo(cx, cy);
-        this.ctx.lineTo(tipX, tipY);
-        this.ctx.strokeStyle = color;
-        this.ctx.lineWidth = 2.5;
-        this.ctx.shadowColor = color;
-        this.ctx.shadowBlur = 8;
-        this.ctx.stroke();
-
-        // Glowing dot along the gauge edge at tip
-        this.ctx.beginPath();
-        this.ctx.arc(tipX, tipY, 4.5, 0, Math.PI * 2);
-        this.ctx.fillStyle = color;
-        this.ctx.shadowColor = color;
-        this.ctx.shadowBlur = 12;
-        this.ctx.fill();
-        this.ctx.shadowBlur = 0; // Reset shadow
-
-        // --- 5. Stationary Main Digital Text Readout ---
-        // Placed cleanly underneath the stationary gauge
-        this.ctx.font = 'bold 13px sans-serif';
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'top';
-        this.ctx.fillStyle = color;
-        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-        this.ctx.shadowBlur = 4;
-        this.ctx.fillText(`${degrees}°`, cx, cy + radius + 4);
-        this.ctx.shadowBlur = 0;
-
-        this.ctx.restore();
+        // Obsolete: Angle gauge is now integrated into the swinging crane assembly in Crane.js
     }
 }

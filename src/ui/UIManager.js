@@ -473,7 +473,7 @@ export class UIManager {
 
         // Refresh shop coin counter so it's ready when player opens shop next
         if (this.shopCoinsEl) {
-            this.shopCoinsEl.textContent = goldCoins;
+            this.shopCoinsEl.textContent = this.game ? (this.game.totalGoldCoins || 0) : 0;
         }
     }
 

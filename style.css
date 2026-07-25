@@ -71,20 +71,21 @@ canvas {
 }
 
 .quick-mute-btn {
-  background: rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(0, 10, 20, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 1.2rem;
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
   color: white;
   cursor: pointer;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
   transition: all 0.2s ease;
   pointer-events: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 .quick-mute-btn:hover {
@@ -101,23 +102,39 @@ canvas {
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  background: rgba(0,0,0,0.35);
-  padding: 8px 14px;
-  border-radius: 12px;
-  backdrop-filter: blur(6px);
+  gap: 8px;
+  background: rgba(0, 10, 20, 0.65);
+  padding: 12px 20px;
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+#score {
+  color: #FFD700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+#height {
+  color: #00FFFF;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
 }
 
 #combo-display {
   color: #FFD700;
-  font-size: 1.4rem;
-  font-weight: 700;
-  text-shadow: 0 0 12px rgba(255, 215, 0, 0.8);
+  font-size: 1.7rem;
+  font-weight: 900;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.9), 0 2px 4px rgba(0, 0, 0, 0.9);
   animation: pulse 0.5s infinite alternate;
-  background: rgba(0,0,0,0.35);
-  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px 16px;
   border-radius: 12px;
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 215, 0, 0.4);
 }
 
 @keyframes pulse {
