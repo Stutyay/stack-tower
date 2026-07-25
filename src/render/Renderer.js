@@ -608,7 +608,7 @@ export class Renderer {
         const barX = this.canvas.width - barWidth - 16;
         const barY = 130;
         
-        const speed = (this.game && this.game.displayVelocity) ? this.game.displayVelocity : 0;
+        const speed = (this.game && typeof this.game.currentDisplayVelocity === 'number') ? this.game.currentDisplayVelocity : 0;
         const fillRatio = Math.min(1, Math.max(0, speed / 11.0));
         
         // Helper to get heat color from Cyan (cool) to Yellow to Red (hot)
