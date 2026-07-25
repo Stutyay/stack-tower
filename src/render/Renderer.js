@@ -417,6 +417,12 @@ export class Renderer {
             this.ctx.restore();
         }
         
+        // --- EDUCATIONAL PHYSICS: Dynamic Geometric String Visualization (Pendulum) ---
+        // Rendered strictly BEFORE drawing tower blocks and falling blocks so it sits behind them!
+        if (this.game.crane && !this.screenshotMode && this.game.state === 'PLAYING') {
+            this.game.crane.drawAngleVisualization(this.ctx, this.game);
+        }
+
         // 4. Draw Blocks
         if (this.game.tower) {
             this.game.tower.blocks.forEach(blockBody => {

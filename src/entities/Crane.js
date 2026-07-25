@@ -209,198 +209,112 @@ export class Crane {
             }
         }
 
-        if (game && game.state === 'PLAYING') {
-            this.drawIntegratedAngleGauge(ctx, game);
-        }
-
         ctx.restore();
     }
 
-    drawIntegratedAngleGauge(ctx, game) {
+    drawAngleVisualization(ctx, game) {
+        if (!this.constraint || !this.block) return;
+
         const cx = this.pivot.x;
         const cy = this.pivot.y;
-        const radius = 96;
-        const innerRadius = 40;
+        const bx = this.block.position.x;
+        const by = this.block.position.y;
+        
+        const dx = bx - cx;
+        const dy = by - cy;
+        const currentAngleRad = Math.atan2(dx, dy); // 0 rad is vertical down
+        const degrees = Math.round(Math.abs(currentAngleRad) * (180 / Math.PI));
 
-        let currentAngleRad = 0;
-        let degrees = 0;
-        if (this.constraint && this.block) {
-            const dx = this.block.position.x - this.pivot.x;
-            const dy = this.block.position.y - this.pivot.y;
-            currentAngleRad = Math.atan2(dx, dy); // 0 rad is vertical down
-            degrees = Math.round(Math.abs(currentAngleRad) * (180 / Math.PI));
-        }
-
-        // Color coding by potential energy range
-        // Green: 0 to 15 degrees. Yellow: 16 to 45 degrees. Red: 46 degrees and above.
-        let color = '#2ecc71'; // Green
-        if (degrees >= 46) {
-            color = '#e74c3c'; // Red
+        // 4. Retain Color-Coding
+        // Green: 0° to 15°, Yellow: 16° to 30°, Red: > 30°
+        let strokeColor = '#2ecc71';
+        let fillColor = 'rgba(46, 204, 113, 0.22)';
+        if (degrees > 30) {
+            strokeColor = '#e74c3c';
+            fillColor = 'rgba(231, 76, 60, 0.22)';
         } else if (degrees >= 16) {
-            color = '#f1c40f'; // Yellow
+            strokeColor = '#f1c40f';
+            fillColor = 'rgba(241, 196, 15, 0.22)';
         }
 
         ctx.save();
-        
-        // Smart Opacity / Proximity Fade: Fade down if tower top or falling block gets close
+
+        // Smart opacity / proximity fade if tower gets close
         let targetAlpha = 1.0;
         if (game && game.state === 'PLAYING' && game.tower && !game.tower.isCollapsing()) {
             let highestWorldY = game.tower.getTopY();
-            if (this.block) {
-                highestWorldY = Math.min(highestWorldY, this.block.position.y);
-            }
+            highestWorldY = Math.min(highestWorldY, by);
             if (game.activeFallingBlock) {
                 highestWorldY = Math.min(highestWorldY, game.activeFallingBlock.position.y);
             }
-            // If the top of the tower/block gets within 160px of pivot Y in world space
             if (highestWorldY < cy + 160) {
-                targetAlpha = 0.35; // Smoothly fade to 35% opacity
+                targetAlpha = 0.35;
             }
         }
-        if (typeof this.gaugeOpacity !== 'number') this.gaugeOpacity = 1.0;
-        this.gaugeOpacity += (targetAlpha - this.gaugeOpacity) * 0.15;
-        ctx.globalAlpha = this.gaugeOpacity;
+        if (typeof this.visualOpacity !== 'number') this.visualOpacity = 1.0;
+        this.visualOpacity += (targetAlpha - this.visualOpacity) * 0.15;
+        ctx.globalAlpha = this.visualOpacity;
 
-        // --- 1. Protractor Background Interface ---
-        // Semi-circle arch from -70° to +70° (pointing downwards from pivot)
-        const startRad = Math.PI / 2 - (70 * Math.PI / 180);
-        const endRad = Math.PI / 2 + (70 * Math.PI / 180);
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius, startRad, endRad, false);
-        ctx.arc(cx, cy, innerRadius, endRad, startRad, true);
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(15, 23, 35, 0.82)';
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+        // --- 1. The Vertical Reference ---
+        // Dashed vertical line originating from crane's pivot point pointing straight down (0°).
+        ctx.setLineDash([6, 6]);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
         ctx.lineWidth = 2;
-        ctx.fill();
-        ctx.stroke();
-
-        // --- 2. Color-Coded Zone Bands along the Outer Rim ---
-        // Green zone (0° to 15° left and right)
         ctx.beginPath();
-        ctx.arc(cx, cy, radius - 4, Math.PI/2 - (15*Math.PI/180), Math.PI/2 + (15*Math.PI/180));
-        ctx.strokeStyle = 'rgba(46, 204, 113, 0.65)';
-        ctx.lineWidth = 6;
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx, cy + dy);
         ctx.stroke();
+        ctx.setLineDash([]); // reset dash
 
-        // Yellow zone (16° to 45°)
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius - 4, Math.PI/2 - (45*Math.PI/180), Math.PI/2 - (15*Math.PI/180));
-        ctx.arc(cx, cy, radius - 4, Math.PI/2 + (15*Math.PI/180), Math.PI/2 + (45*Math.PI/180));
-        ctx.strokeStyle = 'rgba(241, 196, 15, 0.65)';
-        ctx.lineWidth = 6;
-        ctx.stroke();
-
-        // Red zone (46° to 70°)
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius - 4, startRad, Math.PI/2 - (45*Math.PI/180));
-        ctx.arc(cx, cy, radius - 4, Math.PI/2 + (45*Math.PI/180), endRad);
-        ctx.strokeStyle = 'rgba(231, 76, 60, 0.65)';
-        ctx.lineWidth = 6;
-        ctx.stroke();
-
-        // --- 3. Highlighted Arc Segment ---
-        // Highlights the arc from 0° (Math.PI/2) to currentAngleRad (Math.PI/2 - currentAngleRad)
-        if (degrees > 0) {
-            const targetRad = Math.PI / 2 - currentAngleRad;
-            ctx.beginPath();
-            if (currentAngleRad > 0) {
-                ctx.arc(cx, cy, radius - 14, targetRad, Math.PI / 2);
-            } else {
-                ctx.arc(cx, cy, radius - 14, Math.PI / 2, targetRad);
-            }
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 8;
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 10;
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-        }
-
-        // --- 4. Numbered Degree Labels (0, 15, 30, 45, 60, -15, -30, -45, -60) ---
-        ctx.font = '900 14px sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-        ctx.shadowBlur = 4;
-
-        const increments = [0, 15, 30, 45, 60, -15, -30, -45, -60];
-        increments.forEach(deg => {
-            const rad = Math.PI / 2 - (deg * Math.PI / 180);
-            
-            // Draw tick mark
-            const tx1 = cx + Math.cos(rad) * (radius - 8);
-            const ty1 = cy + Math.sin(rad) * (radius - 8);
-            const tx2 = cx + Math.cos(rad) * radius;
-            const ty2 = cy + Math.sin(rad) * radius;
-            ctx.beginPath();
-            ctx.moveTo(tx1, ty1);
-            ctx.lineTo(tx2, ty2);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // Draw label
-            const lx = cx + Math.cos(rad) * (radius - 24);
-            const ly = cy + Math.sin(rad) * (radius - 24);
-            ctx.fillText(deg === 0 ? "0" : `${deg}`, lx, ly);
-        });
-        ctx.shadowBlur = 0;
-
-        // --- 5. The Pointer Arm of the Protractor (Measuring Arm) ---
-        const needleRad = Math.PI / 2 - currentAngleRad;
-        const tipX = cx + Math.cos(needleRad) * (radius + 4);
-        const tipY = cy + Math.sin(needleRad) * (radius + 4);
+        // --- 2. The Angle Wedge ---
+        // Semi-transparent colored geometric shape connecting dashed vertical line to swinging string.
+        // In canvas coordinates, 0 radians is along +X (right), Math.PI/2 is straight down (+Y).
+        const startRad = Math.min(Math.PI / 2, Math.PI / 2 - currentAngleRad);
+        const endRad = Math.max(Math.PI / 2, Math.PI / 2 - currentAngleRad);
 
         ctx.beginPath();
         ctx.moveTo(cx, cy);
-        ctx.lineTo(tipX, tipY);
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3.5;
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 10;
+        ctx.arc(cx, cy, dy, startRad, endRad, false);
+        ctx.closePath();
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Glowing tip dot
-        ctx.beginPath();
-        ctx.arc(tipX, tipY, 5, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 12;
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        // --- 3. The Floating Text ---
+        // Dynamic text floating alongside/inside the moving geometric wedge, following string swing.
+        const midAngleRad = currentAngleRad / 2;
+        const midCanvasRad = Math.PI / 2 - midAngleRad;
+        const dist = dy * 0.58; // 58% down along the middle of the wedge
+        const textX = cx + Math.cos(midCanvasRad) * dist;
+        const textY = cy + Math.sin(midCanvasRad) * dist;
 
-        // --- 6. Large, Bold Digital Text Display ("ANGLE: XX°") ---
-        // Placed centered over the track / within the protractor center arch
-        ctx.font = '900 16px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        const textStr = `ANGLE: ${degrees}°`;
+        const textStr = `Angle: ${degrees}°`;
+        ctx.font = 'bold 13px sans-serif';
         const textMetrics = ctx.measureText(textStr);
-        const badgeW = textMetrics.width + 24;
-        const badgeH = 28;
-        const badgeX = cx - badgeW / 2;
-        const badgeY = cy + 20 - badgeH / 2;
+        const badgeW = textMetrics.width + 16;
+        const badgeH = 22;
 
-        ctx.fillStyle = 'rgba(10, 15, 25, 0.88)';
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
+        // Compact rounded badge behind floating text for contrast against background
+        ctx.fillStyle = 'rgba(10, 15, 25, 0.8)';
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
         if (ctx.roundRect) {
-            ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 6);
+            ctx.roundRect(textX - badgeW / 2, textY - badgeH / 2, badgeW, badgeH, 6);
         } else {
-            ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+            ctx.fillRect(textX - badgeW / 2, textY - badgeH / 2, badgeW, badgeH);
         }
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = color;
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 8;
-        ctx.fillText(textStr, cx, cy + 20);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = strokeColor;
+        ctx.shadowBlur = 6;
+        ctx.fillText(textStr, textX, textY);
         ctx.shadowBlur = 0;
 
         ctx.restore();
