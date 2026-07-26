@@ -171,6 +171,58 @@ export class Game {
         this.restartGame();
     }
 
+    resetToMenu() {
+        if (this.spawnTimer) clearTimeout(this.spawnTimer);
+        
+        const worldBodies = Matter.Composite.allBodies(this.physics.engine.world);
+        worldBodies.forEach(body => {
+            if (body !== this.physics.ground && body !== this.physics.pedestal) {
+                this.physics.remove(body);
+            }
+        });
+        const worldConstraints = Matter.Composite.allConstraints(this.physics.engine.world);
+        worldConstraints.forEach(constraint => {
+            this.physics.remove(constraint);
+        });
+
+        this.goldCoins = 0;
+        this.combo = 1;
+        this.gameStartTime = null;
+        this.elapsedSeconds = 0;
+        this.activeFallingBlock = null;
+        this.currentDisplayVelocity = 0;
+        
+        this.state = 'START';
+        this.inputState = 'IDLE';
+        this.renderer.cameraY = 0;
+        if (this.ui && this.ui.updateHUD) {
+            this.ui.updateHUD(0, 0, 1);
+        }
+        if (this.ui && this.ui.updateAngleDisplay) {
+            this.ui.updateAngleDisplay(0);
+        }
+    }
+
+    resetToHome() {
+        this.resetToMenu();
+    }
+
+    returnToMenu() {
+        this.resetToMenu();
+    }
+
+    returnToHome() {
+        this.resetToMenu();
+    }
+
+    returnToMainMenu() {
+        this.resetToMenu();
+    }
+
+    ResetToMenu() {
+        this.resetToMenu();
+    }
+
     handleTap() {
         // Strict gate: only accept input when the state machine is in IDLE
         if (this.state !== 'PLAYING' || this.inputState !== 'IDLE') return;

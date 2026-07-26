@@ -233,6 +233,14 @@ export class UIManager {
             this.game.restartGame();
         });
 
+        // "Home" — return to Main Menu from Game Over!
+        const homeBtn = document.getElementById('home-btn');
+        if (homeBtn) {
+            homeBtn.addEventListener('click', () => {
+                this.returnToMainMenu();
+            });
+        }
+
         document.getElementById('save-btn').addEventListener('click', () => {
             this.captureAndDownload();
         });
@@ -442,6 +450,40 @@ export class UIManager {
         this.splashScreen.classList.add('hidden');
         this.startScreen.classList.add('hidden');
         this.gameOverScreen.classList.add('hidden');
+    }
+    
+    returnToMainMenu() {
+        this.hideScreens();
+        this.hud.classList.add('hidden');
+        this.clearToast();
+        this.startScreen.classList.remove('hidden');
+        if (this.game && this.game.resetToMenu) {
+            this.game.resetToMenu();
+        }
+    }
+
+    returnToHome() {
+        this.returnToMainMenu();
+    }
+
+    returnToMenu() {
+        this.returnToMainMenu();
+    }
+
+    showMainMenu() {
+        this.returnToMainMenu();
+    }
+
+    goToMainMenu() {
+        this.returnToMainMenu();
+    }
+
+    goToHome() {
+        this.returnToMainMenu();
+    }
+
+    returnToStartScreen() {
+        this.returnToMainMenu();
     }
     
     updateHUD(coins, height, combo) {
