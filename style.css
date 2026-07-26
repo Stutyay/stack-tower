@@ -142,6 +142,10 @@ canvas {
   pointer-events: auto;
   display: flex;
   align-items: center;
+  align-self: flex-start;
+  position: relative;
+  left: 0;
+  margin-left: 0;
   background: rgba(0, 10, 20, 0.85);
   padding: 8px 14px;
   margin-top: 6px;
@@ -774,15 +778,15 @@ button:active {
   100% { opacity: 0; transform: scale(1.1); }
 }
 /* Settings Modal UI */
-.settings-modal-content { max-width: 450px; padding: 25px; background: #ffffff; color: #1A2530; }
-.settings-modal-content h2 { color: #1A2530; font-weight: 900; opacity: 1; margin-bottom: 15px; }
+.settings-modal-content { max-width: 450px; padding: 25px; background: #ffffff; color: #333333; }
+.settings-modal-content h2 { color: #333333; font-weight: 900; opacity: 1; margin-bottom: 15px; }
 .settings-tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid rgba(0,0,0,0.15); padding-bottom: 10px; }
-.settings-tab { flex: 1; background: none; border: none; color: #1A2530; font-weight: 800; cursor: pointer; padding: 10px 5px; transition: 0.2s; opacity: 1; }
+.settings-tab { flex: 1; background: none; border: none; color: #333333; font-weight: 800; cursor: pointer; padding: 10px 5px; transition: 0.2s; opacity: 1; }
 .settings-tab:hover { color: #000000; opacity: 1; }
-.settings-tab.active { color: #1A2530; border-bottom: 3px solid #1A2530; font-weight: 900; opacity: 1; }
+.settings-tab.active { color: #f39c12; border-bottom: 3px solid #f39c12; font-weight: 900; opacity: 1; }
 .settings-panel { display: none; flex-direction: column; gap: 15px; }
 .settings-panel.active { display: flex; }
-.setting-item { display: flex; justify-content: space-between; align-items: center; background: #f0f2f5; padding: 12px 15px; border-radius: 8px; margin-bottom: 0px; border: 1px solid #dcdde1; }
+.setting-item { display: flex; justify-content: space-between; align-items: center; background: #f0f2f5; padding: 12px 15px; border-radius: 8px; margin-bottom: 0px; border: 1px solid #dcdde1; color: #333333; }
 .setting-item span, .setting-item label { font-weight: 800; color: #333333; opacity: 1; }
 /* Sliders */
 input[type=range] { -webkit-appearance: none; width: 120px; background: transparent; }

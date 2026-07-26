@@ -159,6 +159,18 @@ export class Game {
         this.restartGame();
     }
 
+    RestartLevel() {
+        this.restartGame();
+    }
+
+    ResetGameState() {
+        this.restartGame();
+    }
+
+    resetGameState() {
+        this.restartGame();
+    }
+
     handleTap() {
         // Strict gate: only accept input when the state machine is in IDLE
         if (this.state !== 'PLAYING' || this.inputState !== 'IDLE') return;
