@@ -252,37 +252,43 @@ canvas {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  position: relative;
-  padding-top: 25px; /* Ensures button sitting at top is well above the GAME OVER text */
 }
 
 .home-btn {
   position: absolute;
-  top: 10px;
-  right: 15px; /* Exactly parallel to .close-modal top: 10px; right: 15px; */
-  width: 40px;
-  height: 40px;
+  top: 40px;
+  right: 40px;
+  width: 60px;
+  height: 60px;
   padding: 0;
-  background: rgba(255,255,255,0.1);
-  color: #e0e0e0;
-  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(20, 20, 20, 0.95);
+  color: #FFFFFF;
+  border: 2px solid rgba(255, 255, 255, 0.4);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
   transition: all 0.2s ease;
-  z-index: 50;
+  z-index: 100;
   pointer-events: auto;
 }
 
+.home-btn svg {
+  width: 32px;
+  height: 32px;
+  stroke: #FFFFFF;
+  stroke-width: 2.2;
+}
+
 .home-btn:hover {
-  background: rgba(255,255,255,0.18);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-  color: #ffffff;
-  transform: translateY(-2px) scale(1.05);
+  background: rgba(40, 40, 40, 1);
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+  color: #FFFFFF;
+  transform: translateY(-2px) scale(1.08);
 }
 
 /* Header block */
