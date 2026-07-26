@@ -138,6 +138,47 @@ canvas {
   text-shadow: 0 0 6px rgba(0, 255, 255, 0.6);
 }
 
+.angle-card {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 10, 20, 0.85);
+  padding: 8px 14px;
+  margin-top: 6px;
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  border: 2px solid rgba(46, 204, 113, 0.8);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+  width: fit-content;
+  color: #2ecc71;
+  text-shadow: 0 0 8px rgba(46, 204, 113, 0.6);
+  transition: all 0.2s ease;
+}
+
+.angle-card.angle-safe {
+  border-color: rgba(46, 204, 113, 0.8);
+  color: #2ecc71;
+  text-shadow: 0 0 8px rgba(46, 204, 113, 0.6);
+  background: rgba(0, 10, 20, 0.85);
+}
+
+.angle-card.angle-warn {
+  border-color: rgba(241, 196, 15, 0.8);
+  color: #f1c40f;
+  text-shadow: 0 0 8px rgba(241, 196, 15, 0.6);
+  background: rgba(20, 15, 5, 0.85);
+}
+
+.angle-card.angle-danger {
+  border-color: rgba(231, 76, 60, 0.9);
+  color: #e74c3c;
+  text-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+  background: rgba(30, 10, 10, 0.85);
+}
+
 #combo-display {
   color: #FFD700;
   font-size: 0.9rem; /* Scaled down by ~47% from 1.7rem */
@@ -733,25 +774,26 @@ button:active {
   100% { opacity: 0; transform: scale(1.1); }
 }
 /* Settings Modal UI */
-.settings-modal-content { max-width: 450px; padding: 25px; }
-.settings-tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
-.settings-tab { flex: 1; background: none; border: none; color: #aaa; font-weight: bold; cursor: pointer; padding: 10px 5px; transition: 0.2s; }
-.settings-tab:hover { color: #fff; }
-.settings-tab.active { color: #f39c12; border-bottom: 3px solid #f39c12; }
+.settings-modal-content { max-width: 450px; padding: 25px; background: #ffffff; color: #1A2530; }
+.settings-modal-content h2 { color: #1A2530; font-weight: 900; opacity: 1; margin-bottom: 15px; }
+.settings-tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid rgba(0,0,0,0.15); padding-bottom: 10px; }
+.settings-tab { flex: 1; background: none; border: none; color: #1A2530; font-weight: 800; cursor: pointer; padding: 10px 5px; transition: 0.2s; opacity: 1; }
+.settings-tab:hover { color: #000000; opacity: 1; }
+.settings-tab.active { color: #1A2530; border-bottom: 3px solid #1A2530; font-weight: 900; opacity: 1; }
 .settings-panel { display: none; flex-direction: column; gap: 15px; }
 .settings-panel.active { display: flex; }
-.setting-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 8px; margin-bottom: 0px; }
-.setting-item span { font-weight: bold; color: #eee; }
+.setting-item { display: flex; justify-content: space-between; align-items: center; background: #f0f2f5; padding: 12px 15px; border-radius: 8px; margin-bottom: 0px; border: 1px solid #dcdde1; }
+.setting-item span, .setting-item label { font-weight: 800; color: #333333; opacity: 1; }
 /* Sliders */
 input[type=range] { -webkit-appearance: none; width: 120px; background: transparent; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #f39c12; cursor: pointer; margin-top: -6px; box-shadow: 0 0 5px rgba(243, 156, 18, 0.5); }
-input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #d35400; cursor: pointer; margin-top: -6px; box-shadow: 0 0 5px rgba(211, 84, 0, 0.5); }
+input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(0, 0, 0, 0.2); border-radius: 2px; }
 /* Toggles */
 .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
 .switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.2); transition: .4s; border-radius: 24px; }
-.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: #f39c12; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.2); transition: .4s; border-radius: 24px; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+input:checked + .slider { background-color: #d35400; }
 input:checked + .slider:before { transform: translateX(20px); }
 
 /* ─── Insufficient Funds Toast ─────────────────── */

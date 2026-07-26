@@ -5,6 +5,8 @@ export class UIManager {
         this.hud = document.getElementById('hud');
         this.scoreEl = document.getElementById('score');
         this.heightEl = document.getElementById('height');
+        this.angleContainer = document.getElementById('angle-display');
+        this.angleEl = document.getElementById('angle-value');
         this.comboContainer = document.getElementById('combo-display');
         this.comboEl = document.getElementById('combo');
         
@@ -223,11 +225,12 @@ export class UIManager {
         };
         toggleShake.addEventListener('change', updateAccess);
         
-        // "Try Again" — clean up board, return to Main Menu (not instant replay)
+        // "Try Again" — instant replay!
         document.getElementById('restart-btn').addEventListener('click', () => {
-            this.game.resetForMenu();
             this.hideScreens();
-            this.startScreen.classList.remove('hidden');
+            this.showHUD();
+            this.clearToast();
+            this.game.restartGame();
         });
 
         document.getElementById('save-btn').addEventListener('click', () => {
@@ -450,6 +453,21 @@ export class UIManager {
             this.comboEl.innerText = combo;
         } else {
             this.comboContainer.classList.add('hidden');
+        }
+    }
+
+    updateAngleDisplay(degrees) {
+        if (!this.angleEl || !this.angleContainer) return;
+        this.angleEl.innerText = `${degrees}°`;
+
+        // Color coding: Green for safe angles (0° to 15°), Yellow for moderate (16° to 30°), Red for extreme (> 30°)
+        this.angleContainer.classList.remove('angle-safe', 'angle-warn', 'angle-danger');
+        if (degrees > 30) {
+            this.angleContainer.classList.add('angle-danger');
+        } else if (degrees >= 16) {
+            this.angleContainer.classList.add('angle-warn');
+        } else {
+            this.angleContainer.classList.add('angle-safe');
         }
     }
 

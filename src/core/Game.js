@@ -99,6 +99,14 @@ export class Game {
     }
 
     start() {
+        this.restartGame();
+    }
+
+    /**
+     * Instantly restarts active gameplay without returning to the home page or main menu.
+     * Clears the current tower, resets Stacks/Score to 0, resets the crane, and starts a new run.
+     */
+    restartGame() {
         if (this.spawnTimer) clearTimeout(this.spawnTimer);
         
         const worldBodies = Matter.Composite.allBodies(this.physics.engine.world);
@@ -120,6 +128,7 @@ export class Game {
         this.activeFallingBlock = null;
         this.currentDisplayVelocity = 0;
         this.ui.updateHUD(this.goldCoins, 0, this.combo);
+        if (this.ui.updateAngleDisplay) this.ui.updateAngleDisplay(0);
         
         this.state = 'PLAYING';
         this.inputState = 'IDLE'; // Reset input state machine
@@ -138,39 +147,16 @@ export class Game {
         this.spawnBlock();
     }
 
-    /**
-     * Resets the game board (clears physics bodies, resets state to START)
-     * WITHOUT starting a new round. Used by "Try Again" to route back to
-     * the Main Menu so the player can visit the Shop first.
-     */
-    resetForMenu() {
-        if (this.spawnTimer) clearTimeout(this.spawnTimer);
+    resetLevel() {
+        this.restartGame();
+    }
 
-        // Clear all physics bodies except ground/pedestal
-        const worldBodies = Matter.Composite.allBodies(this.physics.engine.world);
-        worldBodies.forEach(body => {
-            if (body !== this.physics.ground && body !== this.physics.pedestal) {
-                this.physics.remove(body);
-            }
-        });
-        const worldConstraints = Matter.Composite.allConstraints(this.physics.engine.world);
-        worldConstraints.forEach(c => this.physics.remove(c));
+    RestartGame() {
+        this.restartGame();
+    }
 
-        // Reset run-level state but keep totalGoldCoins intact
-        this.goldCoins = 0;
-        this.combo = 1;
-        this.gameStartTime = null;
-        this.elapsedSeconds = 0;
-        this.currentBlock = null;
-        this.currentBlockInstance = null;
-        this.crane = null;
-        this.tower = null;
-        this.activeFallingBlock = null;
-        this.currentDisplayVelocity = 0;
-
-        this.state = 'START';
-        this.inputState = 'IDLE';
-        this.renderer.cameraY = 0;
+    ResetLevel() {
+        this.restartGame();
     }
 
     handleTap() {
@@ -256,6 +242,9 @@ export class Game {
         }
 
         this.crane.update(this.physics.engine);
+        if (this.ui && this.ui.updateAngleDisplay && this.crane) {
+            this.ui.updateAngleDisplay(this.crane.getAngleDegrees());
+        }
         
         if (this.tower.isCollapsing()) {
             this.gameOver();
