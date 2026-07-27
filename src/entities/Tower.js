@@ -5,7 +5,7 @@ export class Tower {
     constructor(physicsWorld) {
         this.physics = physicsWorld;
         this.blocks = [];
-        this.baseWidth = GAME_WIDTH;
+        this.baseWidth = 110;
         this.isStableStatus = true;
     }
 
@@ -71,7 +71,7 @@ export class Tower {
             if (Math.abs(block.angle) > maxAngleRadians) {
                 collapsed = true;
             }
-            if (block.position.y > groundY + 100) {
+            if (block.position.y > groundY + 20) {
                 collapsed = true;
             }
         });

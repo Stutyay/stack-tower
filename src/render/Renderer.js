@@ -226,8 +226,9 @@ export class Renderer {
         
         if (this.screenshotMode && this.game.tower) {
             // Calculate total bounding box of the entire standing or collapsed tower
-            let minX = GAME_WIDTH / 2 - 140; // Base width
-            let maxX = GAME_WIDTH / 2 + 140;
+            const bwHalf = (this.game.physics && this.game.physics.baseWidth ? this.game.physics.baseWidth : 110) / 2;
+            let minX = GAME_WIDTH / 2 - bwHalf; // Base width
+            let maxX = GAME_WIDTH / 2 + bwHalf;
             let minY = GAME_HEIGHT;
             
             this.game.tower.blocks.forEach(block => {
@@ -276,17 +277,24 @@ export class Renderer {
             
             if (baseType === 'base_neon') {
                 // Neon Grid Ground
+                const bw = this.game.physics.baseWidth || 110;
                 this.ctx.fillStyle = '#0a0a0a';
-                this.ctx.fillRect(-this.canvas.width/2, -25, this.canvas.width, 50);
+                this.ctx.fillRect(-bw/2, -25, bw, 50);
+                
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.rect(-bw/2, -25, bw, 50);
+                this.ctx.clip();
                 
                 this.ctx.strokeStyle = '#ff00ff';
                 this.ctx.lineWidth = 2;
                 this.ctx.beginPath();
-                for (let i = -this.canvas.width/2; i < this.canvas.width/2; i += 40) {
+                for (let i = -bw/2 - 40; i < bw/2 + 40; i += 40) {
                     this.ctx.moveTo(i, -25);
                     this.ctx.lineTo(i + 20, 25);
                 }
                 this.ctx.stroke();
+                this.ctx.restore();
                 
                 this.ctx.restore();
                 this.ctx.save();
@@ -310,12 +318,19 @@ export class Renderer {
                 
             } else if (baseType === 'base_cloud') {
                 // Cloud Ground
+                const bw = this.game.physics.baseWidth || 110;
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.rect(-bw/2, -25, bw, 50);
+                this.ctx.clip();
+                
                 this.ctx.fillStyle = '#e0f7fa';
                 this.ctx.beginPath();
-                for (let i = -this.canvas.width/2 - 50; i < this.canvas.width/2 + 50; i += 60) {
+                for (let i = -bw/2 - 50; i < bw/2 + 50; i += 60) {
                     this.ctx.arc(i, 0, 40 + Math.sin(i)*10, 0, Math.PI*2);
                 }
                 this.ctx.fill();
+                this.ctx.restore();
                 
                 this.ctx.restore();
                 this.ctx.save();
@@ -339,19 +354,26 @@ export class Renderer {
                 
             } else if (baseType === 'base_ruins') {
                 // Ruins Ground
+                const bw = this.game.physics.baseWidth || 110;
                 this.ctx.fillStyle = '#3e4a42'; // mossy green-gray
-                this.ctx.fillRect(-this.canvas.width/2, -25, this.canvas.width, 50);
+                this.ctx.fillRect(-bw/2, -25, bw, 50);
+                
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.rect(-bw/2, -25, bw, 50);
+                this.ctx.clip();
                 
                 this.ctx.strokeStyle = '#27302a';
                 this.ctx.lineWidth = 3;
                 this.ctx.beginPath();
-                for (let i = -this.canvas.width/2; i < this.canvas.width/2; i += 80) {
+                for (let i = -bw/2 - 80; i < bw/2 + 80; i += 80) {
                     this.ctx.moveTo(i, -25);
                     this.ctx.lineTo(i - 10, 25);
                     this.ctx.moveTo(i, 0);
                     this.ctx.lineTo(i + 40, 5);
                 }
                 this.ctx.stroke();
+                this.ctx.restore();
                 
                 this.ctx.restore();
                 this.ctx.save();
@@ -384,11 +406,17 @@ export class Renderer {
                 
             } else {
                 // Default Concrete
+                const bw = this.game.physics.baseWidth || 110;
                 this.ctx.fillStyle = '#555';
-                this.ctx.fillRect(-this.canvas.width/2, -25, this.canvas.width, 50);
+                this.ctx.fillRect(-bw/2, -25, bw, 50);
+                
+                this.ctx.save();
+                this.ctx.beginPath();
+                this.ctx.rect(-bw/2, -25, bw, 50);
+                this.ctx.clip();
                 
                 this.ctx.fillStyle = '#F1C40F';
-                for (let i = -this.canvas.width/2; i < this.canvas.width/2; i += 40) {
+                for (let i = -bw/2 - 40; i < bw/2 + 40; i += 40) {
                     this.ctx.beginPath();
                     this.ctx.moveTo(i, -25);
                     this.ctx.lineTo(i + 20, -25);
@@ -396,6 +424,7 @@ export class Renderer {
                     this.ctx.lineTo(i - 30, 25);
                     this.ctx.fill();
                 }
+                this.ctx.restore();
                 
                 this.ctx.restore();
                 this.ctx.save();

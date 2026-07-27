@@ -11,11 +11,13 @@ export class PhysicsWorld {
 
         this.runner = Matter.Runner.create();
         
+        this.baseWidth = 110; 
+        
         // Setup ground
         this.ground = Matter.Bodies.rectangle(
             GAME_WIDTH / 2, 
             GAME_HEIGHT - 25, 
-            GAME_WIDTH, 
+            this.baseWidth, 
             50, 
             { 
                 isStatic: true, 
@@ -24,7 +26,6 @@ export class PhysicsWorld {
         );
         
         // Setup pedestal (starting base)
-        this.baseWidth = 280; 
         this.pedestal = Matter.Bodies.rectangle(
             GAME_WIDTH / 2,
             GAME_HEIGHT - 75, // sits on top of the ground
