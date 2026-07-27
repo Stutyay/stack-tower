@@ -226,7 +226,7 @@ export class Renderer {
         
         if (this.screenshotMode && this.game.tower) {
             // Calculate total bounding box of the entire standing or collapsed tower
-            const bwHalf = (this.game.physics && this.game.physics.baseWidth ? this.game.physics.baseWidth : 110) / 2;
+            const bwHalf = (this.game.physics && this.game.physics.baseWidth ? this.game.physics.baseWidth : 100) / 2;
             let minX = GAME_WIDTH / 2 - bwHalf; // Base width
             let maxX = GAME_WIDTH / 2 + bwHalf;
             let minY = GAME_HEIGHT;
@@ -277,7 +277,7 @@ export class Renderer {
             
             if (baseType === 'base_neon') {
                 // Neon Grid Ground
-                const bw = this.game.physics.baseWidth || 110;
+                const bw = this.game.physics.baseWidth || 100;
                 this.ctx.fillStyle = '#0a0a0a';
                 this.ctx.fillRect(-bw/2, -25, bw, 50);
                 
@@ -318,7 +318,7 @@ export class Renderer {
                 
             } else if (baseType === 'base_cloud') {
                 // Cloud Ground
-                const bw = this.game.physics.baseWidth || 110;
+                const bw = this.game.physics.baseWidth || 100;
                 this.ctx.save();
                 this.ctx.beginPath();
                 this.ctx.rect(-bw/2, -25, bw, 50);
@@ -354,7 +354,7 @@ export class Renderer {
                 
             } else if (baseType === 'base_ruins') {
                 // Ruins Ground
-                const bw = this.game.physics.baseWidth || 110;
+                const bw = this.game.physics.baseWidth || 100;
                 this.ctx.fillStyle = '#3e4a42'; // mossy green-gray
                 this.ctx.fillRect(-bw/2, -25, bw, 50);
                 
@@ -406,7 +406,7 @@ export class Renderer {
                 
             } else {
                 // Default Concrete
-                const bw = this.game.physics.baseWidth || 110;
+                const bw = this.game.physics.baseWidth || 100;
                 this.ctx.fillStyle = '#555';
                 this.ctx.fillRect(-bw/2, -25, bw, 50);
                 

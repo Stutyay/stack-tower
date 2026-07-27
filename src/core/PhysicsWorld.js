@@ -10,8 +10,7 @@ export class PhysicsWorld {
         this.engine.velocityIterations = 12;
 
         this.runner = Matter.Runner.create();
-        
-        this.baseWidth = 110; 
+        this.baseWidth = 100; // 1.0x exact width of a standard 100x100 block
         
         // Setup ground
         this.ground = Matter.Bodies.rectangle(

@@ -5,7 +5,7 @@ export class Tower {
     constructor(physicsWorld) {
         this.physics = physicsWorld;
         this.blocks = [];
-        this.baseWidth = 110;
+        this.baseWidth = 100;
         this.isStableStatus = true;
     }
 
