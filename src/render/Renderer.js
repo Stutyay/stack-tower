@@ -195,7 +195,9 @@ export class Renderer {
             }
             
             if (deco === 'deco_city') {
-                const parallaxOffset = this.cameraY * 0.5;
+                const manualOffset = (this.game && this.game.isManualCameraMode) ? this.game.manualCameraOffset : 0;
+                const effectiveCameraY = this.cameraY + manualOffset;
+                const parallaxOffset = effectiveCameraY * 0.5;
                 const skylineBase = this.canvas.height - parallaxOffset;
                 
                 // Detailed City Skyline
@@ -253,17 +255,16 @@ export class Renderer {
             this.ctx.scale(scaleFactor, scaleFactor);
             this.ctx.translate(-centerX, -GAME_HEIGHT);
         } else {
-            // Normal game view: Zoom out to keep the crane on screen
-            const highestPoint = this.game.crane ? this.game.crane.pivot.y - 50 : GAME_HEIGHT;
-            if (highestPoint < 0) {
-                const totalHeightNeeded = GAME_HEIGHT + Math.abs(highestPoint);
-                const scaleFactor = GAME_HEIGHT / totalHeightNeeded;
-                
-                // Scale from the bottom center of the screen
-                this.ctx.translate(GAME_WIDTH / 2, GAME_HEIGHT);
-                this.ctx.scale(scaleFactor, scaleFactor);
-                this.ctx.translate(-GAME_WIDTH / 2, -GAME_HEIGHT);
-            }
+            // Normal game view: Disable Auto-Zoom (Lock the Scale)
+            const zoom = (this.game && this.game.isManualCameraMode) ? this.game.manualZoom : 1.0;
+            const manualOffset = (this.game && this.game.isManualCameraMode) ? this.game.manualCameraOffset : 0;
+            const effectiveCameraY = this.cameraY + manualOffset;
+            
+            this.ctx.translate(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+            this.ctx.scale(zoom, zoom);
+            this.ctx.translate(-GAME_WIDTH / 2, -GAME_HEIGHT / 2);
+            
+            this.ctx.translate(0, -effectiveCameraY);
         }
         
         // 3. Draw Ground

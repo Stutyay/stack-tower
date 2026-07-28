@@ -27,6 +27,13 @@ export class Game {
         this.gameStartTime = null;
         this.elapsedSeconds = 0;
         
+        this.isManualCameraMode = false;
+        this.manualCameraOffset = 0;
+        this.manualZoom = 1;
+        this.pointerDownPos = null;
+        this.isDragging = false;
+        this.pointers = new Map();
+        
         // Load persistent coin total from localStorage
         this._loadTotalCoins();
         
@@ -61,13 +68,77 @@ export class Game {
             if (e.target.tagName !== 'CANVAS' && e.target.id !== 'game-container') return;
 
             if (this.state === 'PLAYING') {
-                this.handleTap();
+                this.pointers.set(e.pointerId, e);
+                this.pointerDownPos = { x: e.clientX, y: e.clientY };
+                this.isDragging = false;
+                
+                if (this.pointers.size === 2) {
+                    const ptrs = Array.from(this.pointers.values());
+                    this.initialPinchDistance = Math.hypot(ptrs[0].clientX - ptrs[1].clientX, ptrs[0].clientY - ptrs[1].clientY);
+                    this.initialPinchZoom = this.manualZoom;
+                }
             }
         });
 
+        document.body.addEventListener('pointermove', (e) => {
+            if (this.state !== 'PLAYING') return;
+            
+            if (this.pointers.has(e.pointerId)) {
+                this.pointers.set(e.pointerId, e);
+            }
 
+            if (this.pointers.size === 2) {
+                this.isDragging = true;
+                this.isManualCameraMode = true;
+                const ptrs = Array.from(this.pointers.values());
+                const dist = Math.hypot(ptrs[0].clientX - ptrs[1].clientX, ptrs[0].clientY - ptrs[1].clientY);
+                if (this.initialPinchDistance) {
+                    this.manualZoom = this.initialPinchZoom * (dist / this.initialPinchDistance);
+                    this.manualZoom = Math.max(0.3, Math.min(this.manualZoom, 2.5));
+                    this.clampManualCamera();
+                }
+            } else if (this.pointerDownPos && this.pointers.has(e.pointerId)) {
+                const dy = e.clientY - this.pointerDownPos.y;
+                if (Math.abs(dy) > 10 || this.isDragging) {
+                    this.isDragging = true;
+                    this.isManualCameraMode = true;
+                    this.manualCameraOffset -= dy / this.manualZoom;
+                    this.pointerDownPos = { x: e.clientX, y: e.clientY };
+                    this.clampManualCamera();
+                }
+            }
+        });
 
-        Matter.Events.on(this.physics.engine, 'collisionStart', (event) => {
+        const onPointerUp = (e) => {
+            this.pointers.delete(e.pointerId);
+            
+            if (this.pointers.size < 2) {
+                this.initialPinchDistance = null;
+            }
+            
+            if (this.state === 'PLAYING' && !this.isDragging && e.target.tagName === 'CANVAS') {
+                this.handleTap();
+            }
+            
+            if (this.pointers.size === 0) {
+                this.pointerDownPos = null;
+                this.isDragging = false;
+            }
+        };
+
+        document.body.addEventListener('pointerup', onPointerUp);
+        document.body.addEventListener('pointercancel', onPointerUp);
+
+        document.body.addEventListener('wheel', (e) => {
+            if (this.state !== 'PLAYING') return;
+            if (e.target.tagName !== 'CANVAS' && e.target.id !== 'game-container') return;
+            
+            this.isManualCameraMode = true;
+            const zoomAmount = e.deltaY > 0 ? 0.9 : 1.1;
+            this.manualZoom *= zoomAmount;
+            this.manualZoom = Math.max(0.3, Math.min(this.manualZoom, 2.5));
+            this.clampManualCamera();
+        });        Matter.Events.on(this.physics.engine, 'collisionStart', (event) => {
             if (this.state !== 'PLAYING') return;
             
             const pairs = event.pairs;
@@ -102,6 +173,22 @@ export class Game {
         this.restartGame();
     }
 
+    clampManualCamera() {
+        const baseY = this.physics.ground ? this.physics.ground.position.y : 800;
+        const topY = this.crane ? this.crane.pivot.y : 0;
+        
+        const effectiveCameraY = this.renderer.cameraY + this.manualCameraOffset;
+        
+        const minCam = topY - 300;
+        const maxCam = baseY - 400;
+        
+        if (effectiveCameraY < minCam) {
+            this.manualCameraOffset = minCam - this.renderer.cameraY;
+        } else if (effectiveCameraY > maxCam) {
+            this.manualCameraOffset = maxCam - this.renderer.cameraY;
+        }
+    }
+
     /**
      * Instantly restarts active gameplay without returning to the home page or main menu.
      * Clears the current tower, resets Stacks/Score to 0, resets the crane, and starts a new run.
@@ -133,6 +220,11 @@ export class Game {
         this.state = 'PLAYING';
         this.inputState = 'IDLE'; // Reset input state machine
         this.renderer.cameraY = 0;
+        this.isManualCameraMode = false;
+        this.manualCameraOffset = 0;
+        this.manualZoom = 1;
+        this.pointers.clear();
+        this.isDragging = false;
         
         // Fetch equipped skins from persistent storage
         const equippedCrane = localStorage.getItem('equippedCrane') || 'crane_yellow';
@@ -235,6 +327,11 @@ export class Game {
 
         // --- LOCK INPUT IMMEDIATELY ---
         this.inputState = 'DROPPING';
+        
+        // Auto-Reset / Snap Back to Action
+        this.isManualCameraMode = false;
+        this.manualCameraOffset = 0;
+        this.manualZoom = 1;
 
         // Zero out velocity for a clean, straight drop
         Matter.Body.setVelocity(this.currentBlock, { x: 0, y: 0 });
@@ -327,11 +424,10 @@ export class Game {
         // Smoothly move crane
         this.crane.setPivotY(this.crane.pivot.y + (targetPivotY - this.crane.pivot.y) * 0.05);
         
-        // Smoothly move camera to keep crane at y=50 on screen
-        const targetCameraY = this.crane.pivot.y - 50;
-        if (targetCameraY < 0) {
-            this.renderer.setCameraY(targetCameraY);
-        }
+        // Smoothly move camera to frame crane and top blocks
+        let targetCameraY = this.crane.pivot.y - 150;
+        if (targetCameraY > 0) targetCameraY = 0;
+        this.renderer.setCameraY(targetCameraY);
     }
 
     checkTowerStability() {
