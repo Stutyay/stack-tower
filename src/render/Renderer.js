@@ -195,8 +195,9 @@ export class Renderer {
             }
             
             if (deco === 'deco_city') {
-                const manualOffset = (this.game && this.game.isManualCameraMode) ? this.game.manualCameraOffset : 0;
-                const effectiveCameraY = this.cameraY + manualOffset;
+                const effectiveCameraY = (this.game && this.game.cameraMode === 'ManualInspection') 
+                                            ? this.game.manualCameraY 
+                                            : this.cameraY;
                 const parallaxOffset = effectiveCameraY * 0.5;
                 const skylineBase = this.canvas.height - parallaxOffset;
                 
@@ -256,9 +257,10 @@ export class Renderer {
             this.ctx.translate(-centerX, -GAME_HEIGHT);
         } else {
             // Normal game view: Disable Auto-Zoom (Lock the Scale)
-            const zoom = (this.game && this.game.isManualCameraMode) ? this.game.manualZoom : 1.0;
-            const manualOffset = (this.game && this.game.isManualCameraMode) ? this.game.manualCameraOffset : 0;
-            const effectiveCameraY = this.cameraY + manualOffset;
+            const zoom = this.game ? (this.game.manualZoom || 1.0) : 1.0;
+            const effectiveCameraY = (this.game && this.game.cameraMode === 'ManualInspection') 
+                                        ? this.game.manualCameraY 
+                                        : this.cameraY;
             
             this.ctx.translate(GAME_WIDTH / 2, GAME_HEIGHT / 2);
             this.ctx.scale(zoom, zoom);
